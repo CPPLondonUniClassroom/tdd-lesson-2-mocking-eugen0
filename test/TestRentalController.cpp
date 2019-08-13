@@ -10,6 +10,17 @@ public:
         rentable->RentalEnd(endTime);
         customer.AssignRental(std::move(rentable));
     }
+
+    struct RentalReturnInfo {
+        Money amountOwed;
+        std::unique_ptr<IRentable> rental;
+    };
+
+    RentalReturnInfo ReturnRental(ICustomer& customer, size_t index) {
+        auto rental = customer.RemoveRental(index);
+        auto timeBorrowed = std::chrono::system_clock::now() - rental->RentalStart();
+        return {};
+    }
 };
 
 //TESTING STARTS HERE
@@ -45,6 +56,32 @@ TEST_CASE("An IRentable is correctly dated and given to a ICustomer") {
     rc.IssueRental(mockCustomer, std::move(mockRentable), expiry);
 }
 
-TEST_CASE("A RentalController correctly takes back a rental") {
+SCENARIO("A Rental return is correctly handled and billed") {
+    GIVEN("An instance of our RentalController") {
+        RentalController rc{};
 
+        AND_GIVEN("A MockCustomer with a MockRental for 1 day costing £2.45") {
+            MockCustomer mockCust;
+            auto mockRental = std::make_unique<MockRentable>();
+
+            REQUIRE_CALL(mockCust, RemoveRental(_))
+                .WITH(_1  == 0)
+                .LR_RETURN(std::move(mockRental));
+            auto start = system_clock::now();
+            auto end   = start + 25h;
+            REQUIRE_CALL(*mockRental, RentalStart())
+                .RETURN(start);
+            /*REQUIRE_CALL(*mockRental, RentalEnd())
+                .RETURN(end);*/
+            REQUIRE_CALL(*mockRental, CostPerDay())
+                .RETURN(Money{2, 45});
+            WHEN("We execute the return of the first rental") {
+                auto amountOwed = rc.ReturnRental(mockCust, 0);
+
+                THEN("The amount owed should be £2.45") {
+                    CHECK(amountOwed == Money{2, 45});
+                }
+            }
+        }
+    }
 }

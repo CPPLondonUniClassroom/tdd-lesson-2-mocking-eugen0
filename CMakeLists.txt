@@ -14,5 +14,5 @@ target_include_directories(Blockbuster PRIVATE include)
 
 add_executable(TestBlockbuster test/testmain.cpp
         test/catch.hpp test/trompeloeil.hpp test/TestCustomer.cpp
-        src/Customer.cpp include/Customer.h test/TestRentalController.cpp)
+        src/Customer.cpp include/Customer.h test/TestRentalController.cpp test/TestMoney.cpp)
 target_include_directories(TestBlockbuster PRIVATE include)

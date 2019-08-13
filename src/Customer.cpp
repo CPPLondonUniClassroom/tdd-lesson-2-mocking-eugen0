@@ -5,7 +5,7 @@ Customer::Customer(std::string name, std::string address) :
 }
 
 const std::string& Customer::Name() const {
-return name;
+    return name;
 }
 
 const std::string& Customer::Address() const {
